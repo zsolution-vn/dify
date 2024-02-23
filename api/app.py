@@ -112,7 +112,7 @@ def initialize_extensions(app):
 @login_manager.request_loader
 def load_user_from_request(request_from_flask_login):
     """Load user based on the request."""
-    if request.blueprint in ['console', 'enterprise']:
+    if request.blueprint in ['console', 'inner_api']:
         # Check if the user_id contains a dot, indicating the old format
         auth_header = request.headers.get('Authorization', '')
         if not auth_header:
@@ -150,7 +150,7 @@ def register_blueprints(app):
     from controllers.files import bp as files_bp
     from controllers.service_api import bp as service_api_bp
     from controllers.web import bp as web_bp
-    from controllers.enterprise import bp as enterprise_bp
+    from controllers.inner_api import bp as inner_api_bp
 
     CORS(service_api_bp,
          allow_headers=['Content-Type', 'Authorization', 'X-App-Code'],
@@ -186,7 +186,7 @@ def register_blueprints(app):
          )
     app.register_blueprint(files_bp)
 
-    app.register_blueprint(enterprise_bp)
+    app.register_blueprint(inner_api_bp)
 
 # create app
 app = create_app()

@@ -1,17 +1,18 @@
 from flask_login import current_user
-
-from controllers.enterprise import api
-from controllers.console.setup import setup_required
-from libs.login import login_required
-from controllers.enterprise.wraps import enterprise_only
 from flask_restful import Resource
 
+from controllers.console.setup import setup_required
+from controllers.inner_api import api
+from controllers.inner_api.wraps import inner_api_only
+from libs.login import login_required
+
+
 class EnterpriseAuthorizationApi(Resource):
-    """Authorization API for enterprise edition, share user and tenant info."""
+    """Authorization API for inner_api edition, share user and tenant info."""
 
     @setup_required
     @login_required
-    @enterprise_only
+    @inner_api_only
     def get(self):
         current_tenant = current_user.current_tenant
         return {

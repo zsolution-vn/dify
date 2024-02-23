@@ -92,3 +92,4 @@ def cloud_utm_record(view):
             pass
         return view(*args, **kwargs)
     return decorated
+

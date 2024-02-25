@@ -1,16 +1,16 @@
 import json
+from collections.abc import Generator
+from typing import Union
 
-from flask_restful import Resource, reqparse
 from flask import Response
 from flask.helpers import stream_with_context
+from flask_restful import Resource, reqparse
 
 from controllers.console.setup import setup_required
 from controllers.inner_api import api
 from controllers.inner_api.wraps import inner_api_only
-
 from services.completion_service import CompletionService
 
-from typing import Generator, Union
 
 class EnterpriseModelInvokeLLMApi(Resource):
     """Model invoke API for enterprise edition"""

@@ -1,13 +1,14 @@
-from core.provider_manager import ProviderManager, ProviderModelBundle
+from collections.abc import Generator
+from typing import Optional, Union, cast
+
 from core.model_runtime.entities.llm_entities import LLMResult, LLMResultChunk, LLMUsage
 from core.model_runtime.entities.message_entities import PromptMessage, PromptMessageTool
-from core.model_runtime.model_providers.__base.large_language_model import LargeLanguageModel
 from core.model_runtime.entities.model_entities import ModelType
-
+from core.model_runtime.model_providers.__base.large_language_model import LargeLanguageModel
 from core.model_runtime.utils.encoders import jsonable_encoder
-
+from core.provider_manager import ProviderModelBundle
 from events.inner_event import model_was_invoked
-from typing import Generator, Union, cast, Optional
+
 
 class ModelRunner:
     """

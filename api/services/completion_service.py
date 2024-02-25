@@ -4,23 +4,23 @@ from typing import Any, Union
 
 from sqlalchemy import and_
 
+from core.app_runner.model_runner import ModelRunner
 from core.application_manager import ApplicationManager
-from core.provider_manager import ProviderManager
-from core.errors.error import ModelCurrentlyNotSupportError, ProviderTokenNotInitError, QuotaExceededError
 from core.entities.application_entities import InvokeFrom
 from core.entities.model_entities import ModelStatus
-from core.model_runtime.entities.model_entities import ModelType
+from core.errors.error import ModelCurrentlyNotSupportError, ProviderTokenNotInitError, QuotaExceededError
 from core.file.message_file_parser import MessageFileParser
 from core.model_runtime.entities.message_entities import (
-    PromptMessage, 
-    UserPromptMessage,
-    SystemPromptMessage,
     AssistantPromptMessage,
-    ToolPromptMessage,
+    PromptMessage,
     PromptMessageRole,
-    PromptMessageTool
+    PromptMessageTool,
+    SystemPromptMessage,
+    ToolPromptMessage,
+    UserPromptMessage,
 )
-from core.app_runner.model_runner import ModelRunner
+from core.model_runtime.entities.model_entities import ModelType
+from core.provider_manager import ProviderManager
 from extensions.ext_database import db
 from models.model import Account, App, AppModelConfig, Conversation, EndUser, Message
 from services.app_model_config_service import AppModelConfigService
@@ -28,6 +28,7 @@ from services.errors.app import MoreLikeThisDisabledError
 from services.errors.app_model_config import AppModelConfigBrokenError
 from services.errors.conversation import ConversationCompletedError, ConversationNotExistsError
 from services.errors.message import MessageNotExistsError
+
 
 class CompletionService:
 

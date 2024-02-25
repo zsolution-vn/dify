@@ -1,6 +1,6 @@
-from events.inner_event import model_was_invoked
-from core.provider_manager import ProviderManager
 from core.model_runtime.entities.model_entities import ModelType
+from core.provider_manager import ProviderManager
+from events.inner_event import model_was_invoked
 from libs.deduct_quota import DeductQuotaManager
 
 provider_manager = ProviderManager()

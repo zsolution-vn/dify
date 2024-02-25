@@ -1,7 +1,8 @@
 from core.entities.provider_configuration import ProviderModelBundle
 from core.entities.provider_entities import QuotaUnit
-from models.provider import Provider, ProviderType
 from extensions.ext_database import db
+from models.provider import Provider, ProviderType
+
 
 class DeductQuotaManager:
     @staticmethod

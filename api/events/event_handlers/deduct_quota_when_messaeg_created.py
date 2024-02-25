@@ -3,6 +3,7 @@ from events.message_event import message_was_created
 from libs.deduct_quota import DeductQuotaManager
 from models.model import Message
 
+
 @message_was_created.connect
 def handle(sender: Message, **kwargs):
     message = sender

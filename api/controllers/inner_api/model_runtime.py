@@ -5,7 +5,7 @@ from controllers.inner_api import api
 from controllers.inner_api.wraps import inner_api_only
 
 
-class EnterpriseModelInvokeApi(Resource):
+class EnterpriseModelInvokeLLMApi(Resource):
     """Model invoke API for enterprise edition"""
 
     @setup_required
@@ -13,4 +13,4 @@ class EnterpriseModelInvokeApi(Resource):
     def post(self):
         pass
     
-api.add_resource(EnterpriseModelInvokeApi, '/model/invoke')
+api.add_resource(EnterpriseModelInvokeLLMApi, '/model/invoke/llm')

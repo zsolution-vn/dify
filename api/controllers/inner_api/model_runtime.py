@@ -1,4 +1,3 @@
-from flask_login import current_user
 from flask_restful import Resource
 
 from controllers.console.setup import setup_required

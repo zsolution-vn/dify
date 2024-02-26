@@ -1,5 +1,4 @@
 import json
-
 from collections.abc import Generator
 from typing import Optional, Union, cast
 

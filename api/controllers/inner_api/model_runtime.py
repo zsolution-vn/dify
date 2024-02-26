@@ -5,22 +5,20 @@ from typing import Union
 from flask import Response
 from flask.helpers import stream_with_context
 from flask_restful import Resource, reqparse
+from werkzeug.exceptions import InternalServerError
 
 from controllers.console.setup import setup_required
 from controllers.inner_api import api
 from controllers.inner_api.wraps import inner_api_only
-from services.completion_service import CompletionService
-from core.errors.error import ModelCurrentlyNotSupportError, ProviderTokenNotInitError, QuotaExceededError
-from core.model_runtime.errors.invoke import InvokeError
-from libs.helper import uuid_value
-from services.completion_service import CompletionService
 from controllers.service_api.app.error import (
     CompletionRequestError,
     ProviderModelCurrentlyNotSupportError,
     ProviderNotInitializeError,
     ProviderQuotaExceededError,
 )
-from werkzeug.exceptions import InternalServerError
+from core.errors.error import ModelCurrentlyNotSupportError, ProviderTokenNotInitError, QuotaExceededError
+from core.model_runtime.errors.invoke import InvokeError
+from services.completion_service import CompletionService
 
 
 class EnterpriseModelInvokeLLMApi(Resource):

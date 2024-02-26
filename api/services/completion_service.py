@@ -339,7 +339,7 @@ class CompletionService:
             raise QuotaExceededError(f"Model provider {provider} quota exceeded.")
         
         converted_tools = []
-        for tool in tools:
+        for tool in tools or []:
             converted_tools.append(PromptMessageTool(
                 name=tool['name'],
                 description=tool['description'],

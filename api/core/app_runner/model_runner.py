@@ -1,3 +1,5 @@
+import json
+
 from collections.abc import Generator
 from typing import Optional, Union, cast
 
@@ -92,9 +94,9 @@ class ModelRunner:
 
                 usage.currency = chunk.delta.usage.currency
 
-            yield jsonable_encoder(chunk)
+            yield 'data: ' + json.dumps(jsonable_encoder(chunk)) + '\n\n'
 
-        model_was_invoked(
+        model_was_invoked.send(
             None, 
             tenant_id=tenant_id,
             model_config={
@@ -118,7 +120,7 @@ class ModelRunner:
         """
         usage = response.usage or LLMUsage.empty_usage()
         
-        model_was_invoked(
+        model_was_invoked.send(
             None, 
             tenant_id=tenant_id,
             model_config={

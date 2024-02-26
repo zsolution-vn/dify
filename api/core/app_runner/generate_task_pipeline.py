@@ -523,7 +523,7 @@ class GenerateTaskPipeline:
 
         # show_retrieve_source
         if 'retriever_resources' in self._task_state.metadata:
-            if self._application_generate_entity.invoke_from in [InvokeFrom.DEBUGGER, InvokeFrom.SERVICE_API]:
+            if self._application_generate_entity.invoke_from in [InvokeFrom.DEBUGGER, InvokeFrom.SERVICE_API, InvokeFrom.INNER_API]:
                 metadata['retriever_resources'] = self._task_state.metadata['retriever_resources']
             else:
                 metadata['retriever_resources'] = []
@@ -537,11 +537,11 @@ class GenerateTaskPipeline:
                     })
         # show annotation reply
         if 'annotation_reply' in self._task_state.metadata:
-            if self._application_generate_entity.invoke_from in [InvokeFrom.DEBUGGER, InvokeFrom.SERVICE_API]:
+            if self._application_generate_entity.invoke_from in [InvokeFrom.DEBUGGER, InvokeFrom.SERVICE_API, InvokeFrom.INNER_API]:
                 metadata['annotation_reply'] = self._task_state.metadata['annotation_reply']
 
         # show usage
-        if self._application_generate_entity.invoke_from in [InvokeFrom.DEBUGGER, InvokeFrom.SERVICE_API]:
+        if self._application_generate_entity.invoke_from in [InvokeFrom.DEBUGGER, InvokeFrom.SERVICE_API, InvokeFrom.INNER_API]:
             metadata['usage'] = self._task_state.metadata['usage']
 
         return metadata

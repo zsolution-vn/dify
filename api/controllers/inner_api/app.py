@@ -45,15 +45,16 @@ class EnterpriseAppInvokeApi(Resource):
 
         args = request_parser.parse_args()
 
-        app_id = args['app_id']
-        app_model: App = db.session.query(App).filter(App.id == app_id).first()
-        if app_model is None:
-            raise NotFound("App Not Exists.")
-        
-        # disable auto generate name
-        args['auto_generate_name'] = False
         
         try:
+            app_id = args['app_id']
+            app_model: App = db.session.query(App).filter(App.id == app_id).first()
+            if app_model is None:
+                raise NotFound("App Not Exists.")
+            
+            # disable auto generate name
+            args['auto_generate_name'] = False
+            
             response = CompletionService.completion(
                 app_model=app_model,
                 user=current_user,

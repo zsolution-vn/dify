@@ -50,6 +50,9 @@ class EnterpriseAppInvokeApi(Resource):
         if app_model is None:
             raise NotFound("App Not Exists.")
         
+        # disable auto generate name
+        args['auto_generate_name'] = False
+        
         try:
             response = CompletionService.completion(
                 app_model=app_model,

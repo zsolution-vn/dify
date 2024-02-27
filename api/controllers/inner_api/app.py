@@ -40,7 +40,7 @@ class EnterpriseAppInvokeApi(Resource):
         request_parser.add_argument('app_id', type=str, required=True, nullable=False, location='json')
         request_parser.add_argument('query', type=str, required=True, nullable=False, location='json')
         request_parser.add_argument('inputs', type=dict, required=True, nullable=False, location='json')
-        request_parser.add_argument('stream', type=bool, required=True, nullable=False, location='json')
+        request_parser.add_argument('stream', type=bool, required=False, nullable=False, location='json')
         request_parser.add_argument('conversation_id', type=str, required=False, nullable=True, location='json')
 
         args = request_parser.parse_args()
@@ -60,7 +60,7 @@ class EnterpriseAppInvokeApi(Resource):
                 user=current_user,
                 args=args,
                 invoke_from=InvokeFrom.INNER_API,
-                streaming=args['stream'],
+                streaming=args['stream'] if 'stream' in args else False,
             )
 
             return compact_response(response)

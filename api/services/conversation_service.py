@@ -102,6 +102,17 @@ class ConversationService:
         db.session.commit()
 
         return conversation
+    
+    @classmethod
+    def auto_generate_name_string(cls, tenant_id: str, query: str):
+        try:
+            return {
+                'name': LLMGenerator.generate_conversation_name(tenant_id, query)
+            }
+        except:
+            return {
+                'name': ''
+            }
 
     @classmethod
     def get_conversation(cls, app_model: App, conversation_id: str, user: Optional[Union[Account, EndUser]]):

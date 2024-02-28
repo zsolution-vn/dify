@@ -1,11 +1,5 @@
-import json
-from collections.abc import Generator
-from typing import Union
 
-from flask import Response
-from flask.helpers import stream_with_context
 from flask_restful import Resource, reqparse
-from werkzeug.exceptions import InternalServerError
 
 from controllers.console.setup import setup_required
 from controllers.inner_api import api

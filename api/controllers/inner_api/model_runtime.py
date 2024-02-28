@@ -31,7 +31,7 @@ class EnterpriseModelInvokeLLMApi(Resource):
         request_parser.add_argument("tenant_id", type=str, required=True, nullable=False, location="json")
         request_parser.add_argument("provider", type=str, required=True, nullable=False, location="json")
         request_parser.add_argument("model", type=str, required=True, nullable=False, location="json")
-        request_parser.add_argument("completion_params", type=dict, required=True, nullable=False, location="json")
+        request_parser.add_argument("completion_params", type=dict, required=False, nullable=False, location="json")
         request_parser.add_argument("prompt_messages", type=list, required=True, nullable=False, location="json")
         request_parser.add_argument("tools", type=list, required=False, nullable=True, location="json")
         request_parser.add_argument("stop", type=list, required=False, nullable=True, location="json")

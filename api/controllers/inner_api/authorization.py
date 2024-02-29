@@ -22,7 +22,8 @@ class EnterpriseAuthorizationApi(Resource):
                 'name': current_tenant.name,
                 'plan': current_tenant.plan,
             },
-            'current_tenant_role': current_tenant.current_role
+            'current_tenant_role': current_tenant.current_role,
+            'timezone': current_user.timezone,
         }
     
 api.add_resource(EnterpriseAuthorizationApi, '/authorization/info')

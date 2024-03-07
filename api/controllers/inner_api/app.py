@@ -12,7 +12,7 @@ from services.completion_service import CompletionService
 from core.entities.application_entities import InvokeFrom
 
 from extensions.ext_database import db
-from models.model import App, EndUser
+from models.model import App
 
 from typing import Union, Generator
 from werkzeug.exceptions import InternalServerError, NotFound

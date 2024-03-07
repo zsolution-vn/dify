@@ -7,12 +7,12 @@ from flask.helpers import stream_with_context
 
 from controllers.console.setup import setup_required
 from controllers.inner_api import api
-from controllers.inner_api.wraps import inner_api_only
+from controllers.inner_api.wraps import inner_api_only, inner_api_user_auth
 from services.completion_service import CompletionService
 from core.entities.application_entities import InvokeFrom
 
 from extensions.ext_database import db
-from models.model import App
+from models.model import App, EndUser
 
 from typing import Union, Generator
 from werkzeug.exceptions import InternalServerError, NotFound
@@ -35,7 +35,8 @@ class EnterpriseAppInvokeApi(Resource):
 
     @setup_required
     @inner_api_only
-    def post(self):
+    @inner_api_user_auth
+    def post(self, **kwargs: dict):
         request_parser = reqparse.RequestParser()
         request_parser.add_argument('app_id', type=str, required=True, nullable=False, location='json')
         request_parser.add_argument('query', type=str, required=True, nullable=False, location='json')
@@ -45,7 +46,6 @@ class EnterpriseAppInvokeApi(Resource):
 
         args = request_parser.parse_args()
 
-        
         try:
             app_id = args['app_id']
             app_model: App = db.session.query(App).filter(App.id == app_id).first()
@@ -57,7 +57,7 @@ class EnterpriseAppInvokeApi(Resource):
             
             response = CompletionService.completion(
                 app_model=app_model,
-                user=current_user,
+                user=kwargs['user'] if 'user' in kwargs else current_user,
                 args=args,
                 invoke_from=InvokeFrom.INNER_API,
                 streaming=args['stream'] if 'stream' in args else False,

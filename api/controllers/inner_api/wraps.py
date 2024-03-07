@@ -1,14 +1,13 @@
+from base64 import b64encode
 from functools import wraps
+from hashlib import sha1
+from hmac import new as hmac_new
 
 from flask import abort, current_app, request
-from hmac import new as hmac_new
-from hashlib import sha1
-from base64 import b64encode
-from json import dumps
-
-from models.model import EndUser
 
 from extensions.ext_database import db
+from models.model import EndUser
+
 
 def inner_api_only(view):
     @wraps(view)

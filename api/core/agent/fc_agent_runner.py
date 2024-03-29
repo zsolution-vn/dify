@@ -209,7 +209,7 @@ class FunctionCallAgentRunner(BaseAgentRunner):
 
             if tool_calls:
                 prompt_messages.append(AssistantPromptMessage(
-                    content='',
+                    content=response or '',
                     name='',
                     tool_calls=[AssistantPromptMessage.ToolCall(
                         id=tool_call[0],
@@ -219,6 +219,10 @@ class FunctionCallAgentRunner(BaseAgentRunner):
                             arguments=json.dumps(tool_call[2], ensure_ascii=False)
                         )
                     ) for tool_call in tool_calls]
+                ))
+            else:
+                prompt_messages.append(AssistantPromptMessage(
+                    content=response,
                 ))
 
             # save thought
@@ -239,12 +243,6 @@ class FunctionCallAgentRunner(BaseAgentRunner):
             
             final_answer += response + '\n'
 
-            # update prompt messages
-            if response.strip():
-                prompt_messages.append(AssistantPromptMessage(
-                    content=response,
-                ))
-            
             # call tools
             tool_responses = []
             for tool_call_id, tool_call_name, tool_call_args in tool_calls:

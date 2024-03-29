@@ -110,6 +110,7 @@ const translation = {
     runThisStep: '运行此步骤',
     checklist: '检查清单',
     checklistTip: '发布前确保所有问题均已解决',
+    checklistResolved: '所有问题均已解决',
     organizeBlocks: '整理节点',
     change: '更改',
   },
@@ -246,7 +247,6 @@ const translation = {
       },
     },
     ifElse: {
-      conditions: '条件',
       if: 'If',
       else: 'Else',
       elseDescription: '用于定义当 if 条件不满足时应执行的逻辑。',
@@ -268,6 +268,7 @@ const translation = {
       },
       enterValue: '输入值',
       addCondition: '添加条件',
+      conditionNotSetup: '条件未设置',
     },
     variableAssigner: {
       title: '变量赋值',

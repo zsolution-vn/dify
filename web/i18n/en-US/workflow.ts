@@ -110,6 +110,7 @@ const translation = {
     runThisStep: 'Run this step',
     checklist: 'Checklist',
     checklistTip: 'Make sure all issues are resolved before publishing',
+    checklistResolved: 'All issues are resolved',
     organizeBlocks: 'Organize blocks',
     change: 'Change',
   },
@@ -246,7 +247,6 @@ const translation = {
       },
     },
     ifElse: {
-      conditions: 'Conditions',
       if: 'If',
       else: 'Else',
       elseDescription: 'Used to define the logic that should be executed when the if condition is not met.',
@@ -268,6 +268,7 @@ const translation = {
       },
       enterValue: 'Enter value',
       addCondition: 'Add Condition',
+      conditionNotSetup: 'Condition NOT setup',
     },
     variableAssigner: {
       title: 'Assign variables',

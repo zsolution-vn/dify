@@ -4,6 +4,8 @@ from typing import Optional, Union, cast
 from core.app.entities.app_invoke_entities import ModelConfigWithCredentialsEntity
 from core.memory.token_buffer_memory import TokenBufferMemory
 from core.model_runtime.entities.message_entities import PromptMessage, PromptMessageRole
+from core.model_runtime.entities.model_entities import ModelPropertyKey
+from core.model_runtime.model_providers.__base.large_language_model import LargeLanguageModel
 from core.model_runtime.utils.encoders import jsonable_encoder
 from core.prompt.advanced_prompt_transform import AdvancedPromptTransform
 from core.prompt.entities.advanced_prompt_entities import ChatModelMessage, CompletionModelPromptTemplate
@@ -128,8 +130,9 @@ class QuestionClassifierNode(LLMNode):
         :param model_config: model config
         :return:
         """
-        prompt_transform = AdvancedPromptTransform()
-        prompt_template = self._get_prompt_template(node_data, query)
+        prompt_transform = AdvancedPromptTransform(with_variable_tmpl=True)
+        rest_token = self._calculate_rest_token(node_data, query, model_config, context)
+        prompt_template = self._get_prompt_template(node_data, query, memory, rest_token)
         prompt_messages = prompt_transform.get_prompt(
             prompt_template=prompt_template,
             inputs={},
@@ -137,14 +140,56 @@ class QuestionClassifierNode(LLMNode):
             files=[],
             context=context,
             memory_config=node_data.memory,
-            memory=memory,
+            memory=None,
             model_config=model_config
         )
         stop = model_config.stop
 
         return prompt_messages, stop
 
-    def _get_prompt_template(self, node_data: QuestionClassifierNodeData, query: str) \
+    def _calculate_rest_token(self, node_data: QuestionClassifierNodeData, query: str,
+                              model_config: ModelConfigWithCredentialsEntity,
+                              context: Optional[str]) -> int:
+        prompt_transform = AdvancedPromptTransform(with_variable_tmpl=True)
+        prompt_template = self._get_prompt_template(node_data, query, None, 2000)
+        prompt_messages = prompt_transform.get_prompt(
+            prompt_template=prompt_template,
+            inputs={},
+            query='',
+            files=[],
+            context=context,
+            memory_config=node_data.memory,
+            memory=None,
+            model_config=model_config
+        )
+        rest_tokens = 2000
+
+        model_context_tokens = model_config.model_schema.model_properties.get(ModelPropertyKey.CONTEXT_SIZE)
+        if model_context_tokens:
+            model_type_instance = model_config.provider_model_bundle.model_type_instance
+            model_type_instance = cast(LargeLanguageModel, model_type_instance)
+
+            curr_message_tokens = model_type_instance.get_num_tokens(
+                model_config.model,
+                model_config.credentials,
+                prompt_messages
+            )
+
+            max_tokens = 0
+            for parameter_rule in model_config.model_schema.parameter_rules:
+                if (parameter_rule.name == 'max_tokens'
+                        or (parameter_rule.use_template and parameter_rule.use_template == 'max_tokens')):
+                    max_tokens = (model_config.parameters.get(parameter_rule.name)
+                                  or model_config.parameters.get(parameter_rule.use_template)) or 0
+
+            rest_tokens = model_context_tokens - max_tokens - curr_message_tokens
+            rest_tokens = max(rest_tokens, 0)
+
+        return rest_tokens
+
+    def _get_prompt_template(self, node_data: QuestionClassifierNodeData, query: str,
+                             memory: Optional[TokenBufferMemory],
+                             max_token_limit: int = 2000) \
             -> Union[list[ChatModelMessage], CompletionModelPromptTemplate]:
         model_mode = ModelMode.value_of(node_data.model.mode)
         classes = node_data.classes
@@ -152,12 +197,15 @@ class QuestionClassifierNode(LLMNode):
         class_names_str = ','.join(class_names)
         instruction = node_data.instruction if node_data.instruction else ''
         input_text = query
-
+        memory_str = ''
+        if memory:
+            memory_str = memory.get_history_prompt_text(max_token_limit=max_token_limit,
+                                                        message_limit=node_data.memory.window.size)
         prompt_messages = []
         if model_mode == ModelMode.CHAT:
             system_prompt_messages = ChatModelMessage(
                 role=PromptMessageRole.SYSTEM,
-                text=QUESTION_CLASSIFIER_SYSTEM_PROMPT
+                text=QUESTION_CLASSIFIER_SYSTEM_PROMPT.format(histories=memory_str)
             )
             prompt_messages.append(system_prompt_messages)
             user_prompt_message_1 = ChatModelMessage(
@@ -182,14 +230,17 @@ class QuestionClassifierNode(LLMNode):
             prompt_messages.append(assistant_prompt_message_2)
             user_prompt_message_3 = ChatModelMessage(
                 role=PromptMessageRole.USER,
-                text=QUESTION_CLASSIFIER_USER_PROMPT_3.format(input_text=input_text, categories=class_names_str,
+                text=QUESTION_CLASSIFIER_USER_PROMPT_3.format(input_text=input_text,
+                                                              categories=class_names_str,
                                                               classification_instructions=instruction)
             )
             prompt_messages.append(user_prompt_message_3)
             return prompt_messages
         elif model_mode == ModelMode.COMPLETION:
             return CompletionModelPromptTemplate(
-                text=QUESTION_CLASSIFIER_COMPLETION_PROMPT.format(input_text=input_text, categories=class_names_str,
+                text=QUESTION_CLASSIFIER_COMPLETION_PROMPT.format(histories=memory_str,
+                                                                  input_text=input_text,
+                                                                  categories=class_names_str,
                                                                   classification_instructions=instruction)
             )
 

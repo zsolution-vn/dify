@@ -270,10 +270,6 @@ class MoonshotLargeLanguageModel(OAIAPICompatLargeLanguageModel):
             chunk_index += 1
         
         if tools_calls:
-            for tool_call in tools_calls:
-                if tool_call.function.arguments == "()":
-                    tool_call.function.arguments = "{}"
-        
             yield LLMResultChunk(
                 model=model,
                 prompt_messages=prompt_messages,

@@ -17,6 +17,7 @@ class InvokeFrom(Enum):
     WEB_APP = 'web-app'
     EXPLORE = 'explore'
     DEBUGGER = 'debugger'
+    INNER_API = 'inner-api'
 
     @classmethod
     def value_of(cls, value: str) -> 'InvokeFrom':

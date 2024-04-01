@@ -8,8 +8,8 @@ from flask.helpers import stream_with_context
 from controllers.console.setup import setup_required
 from controllers.inner_api import api
 from controllers.inner_api.wraps import inner_api_only, inner_api_user_auth
-from services.completion_service import CompletionService
-from core.entities.application_entities import InvokeFrom
+from core.app.entities.app_invoke_entities import InvokeFrom
+from services.app_generate_service import AppGenerateService
 
 from extensions.ext_database import db
 from models.model import App
@@ -26,7 +26,6 @@ from controllers.service_api.app.error import (
     ProviderNotInitializeError,
     ProviderQuotaExceededError,
 )
-from core.entities.application_entities import InvokeFrom
 from core.errors.error import ModelCurrentlyNotSupportError, ProviderTokenNotInitError, QuotaExceededError
 from core.model_runtime.errors.invoke import InvokeError
 
@@ -55,7 +54,7 @@ class EnterpriseAppInvokeApi(Resource):
             # disable auto generate name
             args['auto_generate_name'] = False
             
-            response = CompletionService.completion(
+            response = AppGenerateService.generate(
                 app_model=app_model,
                 user=kwargs['user'] if 'user' in kwargs else current_user,
                 args=args,

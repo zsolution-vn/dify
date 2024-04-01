@@ -13,6 +13,7 @@ import AgentContent from './agent-content'
 import BasicContent from './basic-content'
 import SuggestedQuestions from './suggested-questions'
 import More from './more'
+import WorkflowProcess from './workflow-process'
 import { AnswerTriangle } from '@/app/components/base/icons/src/vender/solid/general'
 import LoadingAnim from '@/app/components/app/chat/loading-anim'
 import Citation from '@/app/components/app/chat/citation'
@@ -27,6 +28,7 @@ type AnswerProps = {
   answerIcon?: ReactNode
   responding?: boolean
   allToolIcons?: Record<string, string | Emoji>
+  showPromptLog?: boolean
 }
 const Answer: FC<AnswerProps> = ({
   item,
@@ -36,6 +38,7 @@ const Answer: FC<AnswerProps> = ({
   answerIcon,
   responding,
   allToolIcons,
+  showPromptLog,
 }) => {
   const { t } = useTranslation()
   const {
@@ -44,6 +47,7 @@ const Answer: FC<AnswerProps> = ({
     agent_thoughts,
     more,
     annotation,
+    workflowProcess,
   } = item
   const hasAgentThoughts = !!agent_thoughts?.length
 
@@ -65,17 +69,28 @@ const Answer: FC<AnswerProps> = ({
           )
         }
       </div>
-      <div className='chat-answer-container grow w-0 group ml-4'>
+      <div className='chat-answer-container grow w-0 ml-4'>
         <div className='relative pr-10'>
           <AnswerTriangle className='absolute -left-2 top-0 w-2 h-3 text-gray-100' />
-          <div className='group relative inline-block px-4 py-3 max-w-full bg-gray-100 rounded-b-2xl rounded-tr-2xl text-sm text-gray-900'>
+          <div
+            className={`
+              group relative inline-block px-4 py-3 max-w-full bg-gray-100 rounded-b-2xl rounded-tr-2xl text-sm text-gray-900
+              ${workflowProcess && 'w-full'}
+            `}
+          >
             {
               !responding && (
                 <Operation
                   item={item}
                   question={question}
                   index={index}
+                  showPromptLog={showPromptLog}
                 />
+              )
+            }
+            {
+              workflowProcess && (
+                <WorkflowProcess data={workflowProcess} hideInfo />
               )
             }
             {

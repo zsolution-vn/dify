@@ -13,9 +13,10 @@ class DeductQuotaManager:
         answer_tokens: int
     ):
         provider_configuration = provider_model_bundle.configuration
+
         if provider_configuration.using_provider_type != ProviderType.SYSTEM:
             return
-        
+
         system_configuration = provider_configuration.system_configuration
 
         quota_unit = None
@@ -42,8 +43,8 @@ class DeductQuotaManager:
 
         if used_quota is not None:
             db.session.query(Provider).filter(
-                Provider.tenant_id == provider_configuration.tenant_id,
-                Provider.provider_name == provider_configuration.provider,
+                Provider.tenant_id == provider_model_bundle.configuration.tenant_id,
+                Provider.provider_name == provider_model_bundle.provider_instance.provider_schema.provider,
                 Provider.provider_type == ProviderType.SYSTEM.value,
                 Provider.quota_type == system_configuration.current_quota_type.value,
                 Provider.quota_limit > Provider.quota_used

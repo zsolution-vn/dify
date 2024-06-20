@@ -38,3 +38,5 @@ jobs:
           context: ./api
           file: ./api/poetry.Dockerfile
           platforms: ${{ matrix.platforms }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

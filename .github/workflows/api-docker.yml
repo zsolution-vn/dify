@@ -102,13 +102,13 @@ jobs:
         with:
           images: ${{ env.DIFY_API_IMAGE_NAME }}
           tags: |
-            type=sha,enable=true,priority=100,prefix=poetry-,suffix=-${{ matrix.platform }},format=long
+            type=sha,enable=true,priority=100,prefix=poetry-,suffix=,format=long
 
       - name: Create manifest list and push
         working-directory: /tmp/digests
         run: |
-          docker buildx imagetools create --tag $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-          $(printf '${{ env.DIFY_API_IMAGE_NAME }}@sha256:%s ' *)
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.DIFY_API_IMAGE_NAME }}@sha256:%s ' *)
 
       - name: Inspect image
         run: |

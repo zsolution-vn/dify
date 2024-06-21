@@ -54,12 +54,11 @@ jobs:
           push: true
           context: ./api
           file: ./api/poetry.Dockerfile
-          platforms: ${{ matrix.platform }}
           build-args: COMMIT_SHA=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
 
   create-manifest:
     needs: api-docker
@@ -77,3 +76,8 @@ jobs:
             ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }}-linux-amd64 \
             ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }}-linux-arm64
           docker manifest push ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }}
+
+      - name: Clear temporary images
+        run: |
+          docker rmi ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }}-linux-amd64
+          docker rmi ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }}-linux-arm64

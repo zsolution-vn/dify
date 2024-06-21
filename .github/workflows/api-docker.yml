@@ -46,7 +46,7 @@ jobs:
         with:
           images: ${{ env.DIFY_API_IMAGE_NAME }}
           tags: |
-            type=sha,enable=true,priority=100,prefix=poetry,suffix=-${{ matrix.platform }},format=long
+            type=sha,enable=true,priority=100,prefix=poetry-,suffix=-${{ matrix.platform }},format=long
 
       - name: Build Docker image
         uses: docker/build-push-action@v5
@@ -74,6 +74,6 @@ jobs:
       - name: Create and Push Docker Manifest
         run: |
           docker manifest create ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }} \
-            ${{ env.DIFY_API_IMAGE_NAME }}:${{ github.sha }}-linux/amd64 \
-            ${{ env.DIFY_API_IMAGE_NAME }}:${{ github.sha }}-linux/arm64
+            ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }}-linux-amd64 \
+            ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }}-linux-arm64
           docker manifest push ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }}

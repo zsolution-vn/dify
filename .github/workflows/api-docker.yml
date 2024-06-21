@@ -48,6 +48,9 @@ jobs:
           tags: |
             type=sha,enable=true,priority=100,prefix=poetry-,suffix=-${{ matrix.platform }},format=long
 
+      - name: Set platform variable
+        run: echo "PLATFORM_SANITIZED=${{ matrix.platform }}/" | sed 's/\//-/g' >> $GITHUB_ENV
+
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
@@ -59,7 +62,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.platform }}
           cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
-          outputs: type=docker,dest=/tmp/${{ github.sha }}-${{ matrix.platform }}.tar
+          outputs: type=docker,dest=/tmp/${{ github.sha }}-${{ env.PLATFORM_SANITIZED }}.tar
 
   create-manifest:
     needs: api-docker
@@ -70,6 +73,9 @@ jobs:
         with:
           username: ${{ env.DOCKERHUB_USER }}
           password: ${{ env.DOCKERHUB_TOKEN }}
+
+      - name: Set platform variable
+        run: echo "PLATFORM_SANITIZED=${{ matrix.platform }}/" | sed 's/\//-/g' >> $GITHUB_ENV
 
       - name: Load amd64 image
         if: needs.build.outputs['matrix.platform'] == 'linux/amd64'

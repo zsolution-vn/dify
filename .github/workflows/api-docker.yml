@@ -52,7 +52,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
-          context: ./api
+          context: "{{defaultContext}}:api"
           file: ./api/poetry.Dockerfile
           build-args: COMMIT_SHA=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
           labels: ${{ steps.meta.outputs.labels }}

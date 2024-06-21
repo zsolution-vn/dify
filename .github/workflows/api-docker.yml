@@ -25,6 +25,11 @@ jobs:
           - platform: linux/arm64
 
     steps:
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -48,13 +53,10 @@ jobs:
           tags: |
             type=sha,enable=true,priority=100,prefix=poetry-,suffix=-${{ matrix.platform }},format=long
 
-      - name: Set platform variable
-        run: echo "PLATFORM_SANITIZED=${{ matrix.platform }}/" | sed 's/\//-/g' >> $GITHUB_ENV
-
       - name: Build Docker image
-        uses: docker/build-push-action@v5
+        id: build
+        uses: docker/build-push-action@v6
         with:
-          push: false
           context: ./api
           file: ./api/poetry.Dockerfile
           build-args: COMMIT_SHA=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
@@ -62,30 +64,45 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.platform }}
           cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
-          outputs: type=docker,dest=/tmp/${{ github.sha }}-${{ env.PLATFORM_SANITIZED }}.tar
+          outputs: type=image,name=${{ env.DIFY_API_IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"   
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
 
   create-manifest:
     needs: api-docker
     runs-on: ubuntu-latest
     steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ env.DOCKERHUB_USER }}
           password: ${{ env.DOCKERHUB_TOKEN }}
 
-      - name: Set platform variable
-        run: echo "PLATFORM_SANITIZED=${{ matrix.platform }}/" | sed 's/\//-/g' >> $GITHUB_ENV
-
-      - name: Load images
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
         run: |
-          docker load -i /tmp/${{ github.sha }}-linux-amd64.tar
-          docker load -i /tmp/${{ github.sha }}-linux-arm64.tar
+          docker buildx imagetools create --tag ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }} \
+          $(printf '${{ env.DIFY_API_IMAGE_NAME }}@sha256:%s ' *)
 
-      - name: Create and Push Docker Manifest
+      - name: Inspect image
         run: |
-          docker buildx imagetools create \
-            --tag ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }} \
-            ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }}-linux-amd64 \
-            ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }}-linux-arm64
-          docker manifest inspect ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }}
+          docker buildx imagetools inspect ${{ env.DIFY_API_IMAGE_NAME }}:poetry-${{ github.sha }}

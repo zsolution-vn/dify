@@ -59,6 +59,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.platform }}
           cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
+          outputs: type=docker,dest=/tmp/${{ github.sha }}-${{ matrix.platform }}.tar
 
   create-manifest:
     needs: api-docker
@@ -69,6 +70,14 @@ jobs:
         with:
           username: ${{ env.DOCKERHUB_USER }}
           password: ${{ env.DOCKERHUB_TOKEN }}
+
+      - name: Load amd64 image
+        if: needs.build.outputs['matrix.platform'] == 'linux/amd64'
+        run: docker load -i /tmp/${{ github.sha }}-linux-amd64.tar
+
+      - name: Load arm64 image
+        if: needs.build.outputs['matrix.platform'] == 'linux/arm64'
+        run: docker load -i /tmp/${{ github.sha }}-linux-arm64.tar
 
       - name: Create and Push Docker Manifest
         run: |

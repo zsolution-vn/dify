@@ -21,9 +21,7 @@ env:
 
 jobs:
   build:
-    runs-on:
-      group: ${{ matrix.platform == 'linux/arm64' && 'arm-runner' }}
-      labels: ${{ matrix.platform == 'linux/amd64' && 'ubuntu-latest' }}
+    runs-on: ${{ matrix.platform == 'linux/arm64' && ['arm64_runner', 'arm_runner_2'] || 'ubuntu-latest' }}
     if: github.repository == 'langgenius/dify'
     strategy:
       matrix:

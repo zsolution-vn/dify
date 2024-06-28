@@ -1,3 +1,6 @@
+import time
+
+from dateutil.parser import parse
 from flask import current_app
 from pydantic import BaseModel, ConfigDict
 
@@ -40,9 +43,11 @@ class SystemFeatureModel(BaseModel):
     sso_enforced_for_signin_protocol: str = ''
     sso_enforced_for_web: bool = False
     sso_enforced_for_web_protocol: str = ''
-
+    expired_at: float = 1e10
 
 class FeatureService:
+    expired_at: float = 0
+    last_fetch_expired_at_time: float = 0
 
     @classmethod
     def get_features(cls, tenant_id: str) -> FeatureModel:
@@ -61,9 +66,10 @@ class FeatureService:
 
         if current_app.config['ENTERPRISE_ENABLED']:
             cls._fulfill_params_from_enterprise(system_features)
+            cls._fulfill_params_from_enterprise_license(system_features)
 
         return system_features
-
+    
     @classmethod
     def _fulfill_params_from_env(cls, features: FeatureModel):
         features.can_replace_logo = current_app.config['CAN_REPLACE_LOGO']
@@ -107,10 +113,20 @@ class FeatureService:
             features.model_load_balancing_enabled = billing_info['model_load_balancing_enabled']
 
     @classmethod
-    def _fulfill_params_from_enterprise(cls, features):
+    def _fulfill_params_from_enterprise(cls, features: SystemFeatureModel):
         enterprise_info = EnterpriseService.get_info()
 
         features.sso_enforced_for_signin = enterprise_info['sso_enforced_for_signin']
         features.sso_enforced_for_signin_protocol = enterprise_info['sso_enforced_for_signin_protocol']
         features.sso_enforced_for_web = enterprise_info['sso_enforced_for_web']
         features.sso_enforced_for_web_protocol = enterprise_info['sso_enforced_for_web_protocol']
+
+    @classmethod
+    def _fulfill_params_from_enterprise_license(cls, features: SystemFeatureModel):
+        current = time.time()
+        if cls.last_fetch_expired_at_time == 0 or current - cls.last_fetch_expired_at_time > 600:
+            cls.last_fetch_expired_at_time = current
+            license_info = EnterpriseService.get_license_info()
+            cls.expired_at = parse(license_info['expired_at']).timestamp() if 'expired_at' in license_info else 1e10
+
+        features.expired_at = cls.expired_at

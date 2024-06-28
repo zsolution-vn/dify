@@ -6,3 +6,7 @@ class EnterpriseService:
     @classmethod
     def get_info(cls):
         return EnterpriseRequest.send_request('GET', '/info')
+
+    @classmethod
+    def get_license_info(cls):
+        return EnterpriseRequest.send_request('GET', '/license')

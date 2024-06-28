@@ -5,6 +5,7 @@ on:
     branches:
       - "main"
       - "deploy/dev"
+      - "chore/build-use-runner-group"
   release:
     types: [published]
 
@@ -20,7 +21,7 @@ env:
 
 jobs:
   build:
-    runs-on: ${{ matrix.platform == 'linux/arm64' && 'arm64_runner' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.platform == 'linux/arm64' && 'arm-runner' || 'ubuntu-latest' }}
     if: github.repository == 'langgenius/dify'
     strategy:
       matrix:

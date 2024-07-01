@@ -53,7 +53,7 @@ export const fetchDatasetDetail: Fetcher<DataSet, string> = (datasetId: string) 
 export const updateDatasetSetting: Fetcher<DataSet, {
   datasetId: string
   body: Partial<Pick<DataSet,
-    'name' | 'description' | 'permission' | 'partial_member_list' | 'indexing_technique' | 'retrieval_model' | 'embedding_model' | 'embedding_model_provider'
+    'name' | 'description' | 'permission' | 'indexing_technique' | 'retrieval_model' | 'embedding_model' | 'embedding_model_provider'
   >>
 }> = ({ datasetId, body }) => {
   return patch<DataSet>(`/datasets/${datasetId}`, { body })
@@ -72,10 +72,14 @@ export const createEmptyDataset: Fetcher<DataSet, { name: string }> = ({ name })
   return post<DataSet>('/datasets', { body: { name } })
 }
 
-export const deleteDataset: Fetcher<DataSet, Record<string, any>> = ({ id: datasetID, isDeleteConfirm }) => {
-  return del<DataSet>(`/datasets/${datasetID}?delete_confirm=${isDeleteConfirm ? 'true' : 'false'}`, {}, {
+export const checkIsUsedInApp: Fetcher<{ is_using: boolean }, string> = (id) => {
+  return get<{ is_using: boolean }>(`/datasets/${id}/use-check`, {}, {
     silent: true,
   })
+}
+
+export const deleteDataset: Fetcher<DataSet, string> = (datasetID) => {
+  return del<DataSet>(`/datasets/${datasetID}`)
 }
 
 export const fetchDefaultProcessRule: Fetcher<ProcessRuleResponse, { url: string }> = ({ url }) => {

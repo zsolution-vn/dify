@@ -35,7 +35,7 @@ from models.dataset import (
 from models.model import UploadFile
 from models.source import DataSourceOauthBinding
 from services.errors.account import NoPermissionError
-from services.errors.dataset import DatasetInUseError, DatasetNameDuplicateError
+from services.errors.dataset import DatasetNameDuplicateError
 from services.errors.document import DocumentIndexingError
 from services.errors.file import FileNotExistsError
 from services.feature_service import FeatureModel, FeatureService
@@ -266,11 +266,7 @@ class DatasetService:
         return dataset
 
     @staticmethod
-    def delete_dataset(dataset_id, delete_confirm, user):
-        if delete_confirm.lower() == 'false':
-            count = AppDatasetJoin.query.filter_by(dataset_id=dataset_id).count()
-            if count > 0:
-                raise DatasetInUseError()
+    def delete_dataset(dataset_id, user):
 
         dataset = DatasetService.get_dataset(dataset_id)
 
@@ -292,6 +288,13 @@ class DatasetService:
             return True
         return False
 
+
+    @staticmethod
+    def dataset_use_check(dataset_id) -> bool:
+        count = AppDatasetJoin.query.filter_by(dataset_id=dataset_id).count()
+        if count > 0:
+            return True
+        return False
 
     @staticmethod
     def check_dataset_permission(dataset, user):

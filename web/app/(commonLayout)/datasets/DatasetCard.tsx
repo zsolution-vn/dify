@@ -10,7 +10,7 @@ import {
 } from '@remixicon/react'
 import Confirm from '@/app/components/base/confirm'
 import { ToastContext } from '@/app/components/base/toast'
-import { deleteDataset } from '@/service/datasets'
+import { checkIsUsedInApp, deleteDataset } from '@/service/datasets'
 import type { DataSet } from '@/models/datasets'
 import Tooltip from '@/app/components/base/tooltip'
 import { Folder } from '@/app/components/base/icons/src/vender/solid/files'
@@ -20,7 +20,6 @@ import Divider from '@/app/components/base/divider'
 import RenameDatasetModal from '@/app/components/datasets/rename-modal'
 import type { Tag } from '@/app/components/base/tag-management/constant'
 import TagSelector from '@/app/components/base/tag-management/selector'
-import { useAppContext } from '@/context/app-context'
 
 export type DatasetCardProps = {
   dataset: DataSet
@@ -33,37 +32,26 @@ const DatasetCard = ({
 }: DatasetCardProps) => {
   const { t } = useTranslation()
   const { notify } = useContext(ToastContext)
-  const { isCurrentWorkspaceDatasetOperator } = useAppContext()
   const [tags, setTags] = useState<Tag[]>(dataset.tags)
 
   const [showRenameModal, setShowRenameModal] = useState(false)
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   const [confirmMessage, setConfirmMessage] = useState<string>('')
   const detectIsUsedByApp = useCallback(async () => {
-    let isUsedByApp = false
     try {
-      await deleteDataset({
-        id: dataset.id,
-        isDeleteConfirm: false,
-      })
+      const { is_using: isUsedByApp } = await checkIsUsedInApp(dataset.id)
+      setConfirmMessage(isUsedByApp ? t('dataset.datasetUsedByApp')! : t('dataset.deleteDatasetConfirmContent')!)
     }
     catch (e: any) {
       const res = await e.json()
-      if (res?.code === 'dataset_in_use')
-        isUsedByApp = true
-      else
-        notify({ type: 'error', message: res?.message || 'Unknown error' })
+      notify({ type: 'error', message: res?.message || 'Unknown error' })
     }
 
-    setConfirmMessage(isUsedByApp ? t('dataset.datasetUsedByApp')! : t('dataset.deleteDatasetConfirmContent')!)
     setShowConfirmDelete(true)
   }, [dataset.id, notify, t])
   const onConfirmDelete = useCallback(async () => {
     try {
-      await deleteDataset({
-        id: dataset.id,
-        isDeleteConfirm: true,
-      })
+      await deleteDataset(dataset.id)
       notify({ type: 'success', message: t('dataset.datasetDeleted') })
       if (onSuccess)
         onSuccess()
@@ -94,19 +82,15 @@ const DatasetCard = ({
         <div className='h-8 py-[6px] px-3 mx-1 flex items-center gap-2 hover:bg-gray-100 rounded-lg cursor-pointer' onClick={onClickRename}>
           <span className='text-gray-700 text-sm'>{t('common.operation.settings')}</span>
         </div>
-        {!isCurrentWorkspaceDatasetOperator && (
-          <>
-            <Divider className="!my-1" />
-            <div
-              className='group h-8 py-[6px] px-3 mx-1 flex items-center gap-2 hover:bg-red-50 rounded-lg cursor-pointer'
-              onClick={onClickDelete}
-            >
-              <span className={cn('text-gray-700 text-sm', 'group-hover:text-red-500')}>
-                {t('common.operation.delete')}
-              </span>
-            </div>
-          </>
-        )}
+        <Divider className="!my-1" />
+        <div
+          className='group h-8 py-[6px] px-3 mx-1 flex items-center gap-2 hover:bg-red-50 rounded-lg cursor-pointer'
+          onClick={onClickDelete}
+        >
+          <span className={cn('text-gray-700 text-sm', 'group-hover:text-red-500')}>
+            {t('common.operation.delete')}
+          </span>
+        </div>
       </div>
     )
   }

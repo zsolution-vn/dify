@@ -115,7 +115,7 @@ class DatasetApi(DatasetApiResource):
         delete_confirm = request.args.get('delete_confirm', default='false', type=str)
 
         try:
-            if DatasetService.delete_dataset(dataset_id_str, delete_confirm, current_user):
+            if DatasetService.delete_dataset(dataset_id_str, current_user):
                 return {'result': 'success'}, 204
             else:
                 raise NotFound("Dataset not found.")

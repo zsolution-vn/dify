@@ -550,7 +550,7 @@ class DatasetRetrievalSettingApi(Resource):
                         RetrievalMethod.SEMANTIC_SEARCH
                     ]
                 }
-            case VectorType.QDRANT | VectorType.WEAVIATE | VectorType.OPENSEARCH:
+            case VectorType.QDRANT | VectorType.WEAVIATE | VectorType.OPENSEARCH | VectorType.ANALYTICDB:
                 return {
                     'retrieval_method': [
                         RetrievalMethod.SEMANTIC_SEARCH,
@@ -574,7 +574,7 @@ class DatasetRetrievalSettingMockApi(Resource):
                         RetrievalMethod.SEMANTIC_SEARCH
                     ]
                 }
-            case VectorType.QDRANT | VectorType.WEAVIATE | VectorType.OPENSEARCH:
+            case VectorType.QDRANT | VectorType.WEAVIATE | VectorType.OPENSEARCH| VectorType.ANALYTICDB:
                 return {
                     'retrieval_method': [
                         RetrievalMethod.SEMANTIC_SEARCH,

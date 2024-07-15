@@ -78,6 +78,26 @@ const translation = {
     importFailure: 'Import failure',
     importSuccess: 'Import success',
   },
+  env: {
+    envPanelTitle: 'Environment Variables',
+    envDescription: 'Environment variables can be used to store private information and credentials. They are read-only and can be separated from the DSL file during export.',
+    envPanelButton: 'Add Variable',
+    modal: {
+      title: 'Add Environment Variable',
+      editTitle: 'Edit Environment Variable',
+      type: 'Type',
+      name: 'Name',
+      namePlaceholder: 'env name',
+      value: 'Value',
+      valuePlaceholder: 'env value',
+    },
+    export: {
+      title: 'Export Secret environment variables?',
+      checkbox: 'Confirm export of the above variables',
+      ignore: 'Ignore & Export DSL',
+      export: 'Export DSL with Secret variables ',
+    },
+  },
   changeHistory: {
     title: 'Change History',
     placeholder: 'You haven\'t changed anything yet',

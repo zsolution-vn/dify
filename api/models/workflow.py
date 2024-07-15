@@ -1,7 +1,15 @@
 import json
+from collections.abc import Mapping, Sequence
 from enum import Enum
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
+import contexts
+from core.app.variables import (
+    SecretVariable,
+    Variable,
+    variable_factory,
+)
+from core.helper import encrypter
 from extensions.ext_database import db
 from libs import helper
 from models import StringUUID
@@ -112,6 +120,8 @@ class Workflow(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
     updated_by = db.Column(StringUUID)
     updated_at = db.Column(db.DateTime)
+    # TODO: update this field to sqlalchemy column after frontend update.
+    _environment_variables = '{"token": {"name": "token", "value": "SFlCUklEOlfCobLe/lmU+c2evAQ1qA/W/YnuBcWqNTxC5+IkUTNtEDotk1Cd9Du31kOI4gOqPSsCqWs+SoO+cxbJ8loftgsyCbrHKmEQS3Ki6/05XFeY1iKR4AgUAPFrfLyWwjc5ztZIPEnzL30T+NPm6rlm/x/7Wlsw0B59HQcImFB9pRzI6JXBXmY4ZYlXdBH1zfWZkHRn2MQO372O6WPfuT8XMgBSjnX95/tUfyupQIplEjEyAiOaLwVmZNvtQ1757IcRYq7AIh35e8XVFCPMYK9B9jIv1zoOh3MZc8+B0v79yi3XseFXW74yoV9ufqbRELqUpcQfimGQDXFoyMOn4fd6letd97DjT41jNbsOZGlR16SqBbv9nnw4lHnEkOalC6XFspO9e81EAg7/QQ==", "value_type": "secret"}}'
 
     @property
     def created_by_account(self):
@@ -122,11 +132,11 @@ class Workflow(db.Model):
         return Account.query.get(self.updated_by) if self.updated_by else None
 
     @property
-    def graph_dict(self):
-        return json.loads(self.graph) if self.graph else None
+    def graph_dict(self) -> Mapping[str, Any]:
+        return json.loads(self.graph) if self.graph else {}
 
     @property
-    def features_dict(self):
+    def features_dict(self) -> Mapping[str, Any]:
         return json.loads(self.features) if self.features else {}
 
     def user_input_form(self, to_old_structure: bool = False) -> list:
@@ -176,6 +186,60 @@ class Workflow(db.Model):
         return db.session.query(WorkflowToolProvider).filter(
             WorkflowToolProvider.app_id == self.app_id
         ).first() is not None
+
+    @property
+    def environment_variables(self) -> Sequence[Variable]:
+        # FIXME: get current user from flask context, may not a good way.
+        user = contexts.current_user.get()
+
+        environment_variables_dict: dict[str, Any] = json.loads(self._environment_variables)
+        results = [variable_factory.from_mapping(v) for v in environment_variables_dict.values()]
+        # decrypt secret variables value
+        decrypt_func = (
+            lambda var: var.model_copy(
+                update={'value': encrypter.decrypt_token(tenant_id=user.current_tenant_id, token=var.value)}
+            )
+            if isinstance(var, SecretVariable)
+            else var
+        )
+        results = [decrypt_func(var) for var in results]
+        return results
+
+    @environment_variables.setter
+    def environment_variables(self, vars: Sequence[Variable]):
+        # FIXME: get current user from flask context, may not a good way.
+        user = contexts.current_user.get()
+
+        previous_vars = {var.name: var for var in self.environment_variables}
+        new_vars: list[Variable] = []
+        for var in vars:
+            if var.name in previous_vars and var == previous_vars[var.name]:
+                var = previous_vars[var.name]
+            elif var.name not in previous_vars and isinstance(var, SecretVariable):
+                var = var.model_copy(
+                    update={'value': encrypter.encrypt_token(tenant_id=user.current_tenant_id, token=var.value)}
+                )
+            new_vars.append(var)
+        environment_variables_json = json.dumps(
+            {var.name: var.model_dump() for var in new_vars},
+            ensure_ascii=False,
+        )
+        self._environment_variables = environment_variables_json
+
+    def to_dict(self, *, include_secret: bool = False) -> Mapping[str, Any]:
+        environment_variables = list(self.environment_variables)
+        environment_variables = [
+            v if not isinstance(v, SecretVariable) or include_secret else v.model_copy(update={'value': ''})
+            for v in environment_variables
+        ]
+
+        result = {
+            'graph': self.graph_dict,
+            'features': self.features_dict,
+            'environment_variables': [var.model_dump() for var in environment_variables],
+        }
+        return result
+
 
 class WorkflowRunTriggeredFrom(Enum):
     """

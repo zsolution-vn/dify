@@ -9,7 +9,7 @@ import httpx
 import core.helper.ssrf_proxy as ssrf_proxy
 from configs import dify_config
 from core.workflow.entities.variable_entities import VariableSelector
-from core.workflow.entities.variable_pool import ValueType, VariablePool
+from core.workflow.entities.variable_pool import VariablePool
 from core.workflow.nodes.http_request.entities import (
     HttpRequestNodeAuthorization,
     HttpRequestNodeBody,
@@ -336,16 +336,13 @@ class HttpExecutor:
         if variable_pool:
             variable_value_mapping = {}
             for variable_selector in variable_selectors:
-                value = variable_pool.get_variable_value(
-                    variable_selector=variable_selector.value_selector, target_value_type=ValueType.STRING
-                )
-
-                if value is None:
+                variable = variable_pool.get(variable_selector.value_selector)
+                if variable is None:
                     raise ValueError(f'Variable {variable_selector.variable} not found')
-
-                if escape_quotes and isinstance(value, str):
-                    value = value.replace('"', '\\"')
-
+                if escape_quotes and isinstance(variable.value, str):
+                    value = variable.value.replace('"', '\\"')
+                else:
+                    value = variable.value
                 variable_value_mapping[variable_selector.variable] = value
 
             return variable_template_parser.format(variable_value_mapping), variable_selectors

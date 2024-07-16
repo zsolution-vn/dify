@@ -9,9 +9,7 @@ from core.model_manager import ModelManager
 from core.model_runtime.entities.model_entities import ModelType
 from core.rag.datasource.keyword.jieba.jieba_keyword_table_handler import JiebaKeywordTableHandler
 from core.rag.models.document import Document
-from core.rag.rerank.entity.weight import Weights, VectorSetting
-from rank_bm25 import BM25Okapi
-from sklearn.feature_extraction.text import TfidfVectorizer
+from core.rag.rerank.entity.weight import VectorSetting, Weights
 
 
 class WeightRerankRunner:
@@ -138,10 +136,10 @@ class WeightRerankRunner:
         # 计算查询TF-IDF值与每个文档TF-IDF值的相似度
         def cosine_similarity(vec1, vec2):
             intersection = set(vec1.keys()) & set(vec2.keys())
-            numerator = sum([vec1[x] * vec2[x] for x in intersection])
+            numerator = sum(vec1[x] * vec2[x] for x in intersection)
 
-            sum1 = sum([vec1[x] ** 2 for x in vec1.keys()])
-            sum2 = sum([vec2[x] ** 2 for x in vec2.keys()])
+            sum1 = sum(vec1[x] ** 2 for x in vec1.keys())
+            sum2 = sum(vec2[x] ** 2 for x in vec2.keys())
             denominator = math.sqrt(sum1) * math.sqrt(sum2)
 
             if not denominator:

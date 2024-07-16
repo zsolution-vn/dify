@@ -392,6 +392,7 @@ const translation = {
       writeMode: 'Write Mode',
       overwrite: 'Overwrite',
       append: 'Append',
+      plus: 'Plus',
       clear: 'Clear',
       setValue: 'Set Value',
     },

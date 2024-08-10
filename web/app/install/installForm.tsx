@@ -65,7 +65,7 @@ const InstallForm = () => {
   useEffect(() => {
     fetchSetupStatus().then((res: SetupStatusResponse) => {
       if (res.step === 'finished') {
-        window.location.href = '/signin'
+        // window.location.href = '/signin'
       }
       else {
         fetchInitValidateStatus().then((res: InitValidateStatusResponse) => {

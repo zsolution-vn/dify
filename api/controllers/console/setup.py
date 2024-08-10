@@ -7,12 +7,11 @@ from configs import dify_config
 from libs.helper import email, get_remote_ip, str_len
 from libs.password import valid_password
 from models.model import DifySetup
-from services.account_service import RegisterService, TenantService
+from services.account_service import RegisterService
 
 from . import api
-from .error import AlreadySetupError, NotInitValidateError, NotSetupError
+from .error import NotInitValidateError, NotSetupError
 from .init_validate import get_init_validate_status
-from .wraps import only_edition_self_hosted
 
 
 class SetupApi(Resource):
@@ -28,16 +27,16 @@ class SetupApi(Resource):
             return {'step': 'not_started'}
         return {'step': 'finished'}
 
-    @only_edition_self_hosted
+    # @only_edition_self_hosted
     def post(self):
         # is set up
-        if get_setup_status():
-            raise AlreadySetupError()
+        # if get_setup_status():
+        #     raise AlreadySetupError()
 
-        # is tenant created
-        tenant_count = TenantService.get_tenant_count()
-        if tenant_count > 0:
-            raise AlreadySetupError()
+        # # is tenant created
+        # tenant_count = TenantService.get_tenant_count()
+        # if tenant_count > 0:
+        #     raise AlreadySetupError()
     
         if not get_init_validate_status():
             raise NotInitValidateError()
@@ -50,7 +49,6 @@ class SetupApi(Resource):
         parser.add_argument('password', type=valid_password,
                             required=True, location='json')
         args = parser.parse_args()
-
         # setup
         RegisterService.setup(
             email=args['email'],

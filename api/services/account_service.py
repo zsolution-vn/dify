@@ -524,7 +524,7 @@ class RegisterService:
             TenantService.create_owner_tenant_if_not_exist(account)
 
             dify_setup = DifySetup(
-                version=dify_config.CURRENT_VERSION
+                version=f"{dify_config.CURRENT_VERSION}_{email}"
             )
             db.session.add(dify_setup)
             db.session.commit()

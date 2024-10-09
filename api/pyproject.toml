@@ -200,10 +200,7 @@ safetensors = "~0.4.3"
 ############################################################
 # [ Tools ] dependency group
 ############################################################
-ruff = ">=0.5.7,<0.5.8"
-dotenv-linter = "^0.5.0"
-
-[tool.poetry.group.tool.dependencies]
+[tool.poetry.group.tools.dependencies]
 arxiv = "2.1.0"
 cloudscraper = "1.2.71"
 duckduckgo-search = "~6.3.0"

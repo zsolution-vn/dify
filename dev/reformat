@@ -2,14 +2,18 @@
 
 set -x
 
-# style checks rely on commands in path
-if ! command -v ruff &> /dev/null || ! command -v dotenv-linter &> /dev/null; then
-    echo "Installing linting tools (Ruff, dotenv-linter ...) ..."
-    poetry install -C api --only lint
+# Ensure poetry environment is activated
+if ! command -v poetry &> /dev/null; then
+    echo "Poetry not found. Please install Poetry first."
+    exit 1
 fi
 
-# run ruff linter
-ruff check --fix ./api
+# Install linting tools if not already installed
+echo "Installing linting tools (Ruff, dotenv-linter ...) ..."
+poetry install --only lint
 
-# run dotenv-linter linter
-dotenv-linter ./api/.env.example ./web/.env.example
+# Run Ruff linter
+poetry run ruff check --fix ./api
+
+# Run dotenv-linter
+poetry run dotenv-linter ./api/.env.example ./web/.env.example
